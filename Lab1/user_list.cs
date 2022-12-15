@@ -7,7 +7,7 @@ using System.Security.Cryptography;
 using System.Xml;
 
 namespace Lab1
-{    
+{
     public class user_list
     {
         const bool DefaultPassSecure = false;
@@ -22,12 +22,13 @@ namespace Lab1
         private Dictionary<string, user> Users = new Dictionary<string, user>();
         private user temp_user = new user();
 
+
         public void Add_new_user(string Name, string pass, bool PassSecure, bool IsBlocked)
         {
-            if (Name != "" && !Users.ContainsKey(Name))
+            if (Name != "" && !Users.ContainsKey(Name.ToLower()))
             {
-                temp_user.Name = Name;
-                temp_user.Pass = Get_hash(Name, pass);
+                temp_user.Name = Name.ToLower();
+                temp_user.Pass = pass;
                 temp_user.PassSecure = PassSecure;
                 temp_user.IsBlocked = IsBlocked;
                 Users.Add(Name, temp_user);
@@ -36,13 +37,13 @@ namespace Lab1
 
         public void Add_new_user(string Name, string pass, bool PassSecure)
         {
-            if (Name != "" && !Users.ContainsKey(Name))
+            if (Name != "" && !Users.ContainsKey(Name.ToLower()))
             {
-                temp_user.Name = Name;
-                temp_user.Pass = Get_hash(Name, pass);
+                temp_user.Name = Name.ToLower();
+                temp_user.Pass = pass;
                 temp_user.PassSecure = PassSecure;
                 temp_user.IsBlocked = false;
-                Users.Add(Name, temp_user);
+                Users.Add(Name.ToLower(), temp_user);
             }
         }
 
@@ -50,11 +51,11 @@ namespace Lab1
         {
             if (Name != "" && !Users.ContainsKey(Name))
             {
-                temp_user.Name = Name;
-                temp_user.Pass = Get_hash(Name, pass); ;
+                temp_user.Name = Name.ToLower();
+                temp_user.Pass = pass;
                 temp_user.PassSecure = DefaultPassSecure;
                 temp_user.IsBlocked = false;
-                Users.Add(Name, temp_user);
+                Users.Add(Name.ToLower(), temp_user);
             }
         }
 
@@ -62,11 +63,11 @@ namespace Lab1
         {
             if (Name != "" && !Users.ContainsKey(Name))
             {
-                temp_user.Name = Name;
-                temp_user.Pass = ""; 
+                temp_user.Name = Name.ToLower();
+                temp_user.Pass = "";
                 temp_user.PassSecure = DefaultPassSecure;
                 temp_user.IsBlocked = false;
-                Users.Add(Name, temp_user);
+                Users.Add(Name.ToLower(), temp_user);
             }
         }
 
@@ -74,7 +75,7 @@ namespace Lab1
         {
             if (Name != "")
             {
-                Users.Remove(Name);
+                Users.Remove(Name.ToLower());
             }
         }
 
@@ -83,14 +84,14 @@ namespace Lab1
             List<string> l = new List<string>();
             foreach (string name in Main.users.Users.Keys)
             {
-                l.Add(name);
+                l.Add(name.ToLower());
             }
             return l;
         }
 
         public bool Pass_Check(string Name, string pass)
         {
-            if (Name != "" && Users.ContainsKey(Name) && Users[Name].Pass.SequenceEqual(Get_hash(Name, pass)))
+            if (Name.ToLower() != "" && Users.ContainsKey(Name.ToLower()) && Users[Name.ToLower()].Pass == pass)
             {
                 return true;
             }
@@ -99,44 +100,44 @@ namespace Lab1
 
         public bool Is_pass_secure_on(string Name)
         {
-            if (Name != "" && Users.ContainsKey(Name))
+            if (Name.ToLower() != "" && Users.ContainsKey(Name.ToLower()))
             {
-                return Users[Name].PassSecure;
+                return Users[Name.ToLower()].PassSecure;
             }
             else return false;
         }
 
         public bool Is_blocked(string Name)
         {
-            if (Name != "" && Users.ContainsKey(Name))
+            if (Name.ToLower() != "" && Users.ContainsKey(Name.ToLower()))
             {
-                return Users[Name].IsBlocked;
+                return Users[Name.ToLower()].IsBlocked;
             }
             else return false;
         }
 
         public bool Is_exist(string Name)
         {
-            return Users.ContainsKey(Name);
+            return Users.ContainsKey(Name.ToLower());
         }
 
         public void Pass_Change(string Name, string pass)
         {
-            if (Name != "" && Users.ContainsKey(Name) )
+            if (Name.ToLower() != "" && Users.ContainsKey(Name.ToLower()))
             {
-                temp_user = Users[Name];
-                temp_user.Pass = Get_hash(Name, pass);
-                Users[Name] = temp_user;
+                temp_user = Users[Name.ToLower()];
+                temp_user.Pass = pass;
+                Users[Name.ToLower()] = temp_user;
             }
         }
 
         public void Change_pass_secure(string Name, bool sec)
         {
-            if (Name != "" && Users.ContainsKey(Name) )
+            if (Name.ToLower() != "" && Users.ContainsKey(Name.ToLower()))
             {
-                temp_user = Users[Name];
+                temp_user = Users[Name.ToLower()];
                 temp_user.PassSecure = sec;
-                Users[Name] = temp_user;
+                Users[Name.ToLower()] = temp_user;
             }
         }
 
@@ -144,9 +145,9 @@ namespace Lab1
         {
             if (Name != "" && Users.ContainsKey(Name))
             {
-                temp_user = Users[Name];
+                temp_user = Users[Name.ToLower()];
                 temp_user.IsBlocked = block;
-                Users[Name] = temp_user;
+                Users[Name.ToLower()] = temp_user;
             }
         }
 
@@ -182,7 +183,7 @@ namespace Lab1
                     foreach (user u in Users.Values)
                     {
                         writer.WriteStartElement("User");
-                        {   
+                        {
                             writer.WriteElementString("Name", u.Name);
                             writer.WriteElementString("Pass", u.Pass);
                             writer.WriteElementString("PassSecure", u.PassSecure.ToString());
@@ -193,22 +194,6 @@ namespace Lab1
                 }
                 writer.WriteEndElement();
             }
-        }
-
-        private string Get_hash(string Name, string pass)
-        {
-            if (pass == "") return "";
-            char[] output_array = new char[Name.Length];
-            int multiplier = Convert.ToInt32(pass[0]);
-            int term = Convert.ToInt32(pass[1]);
-            int gamma = Convert.ToInt32(pass[2]);
-            for (int itera = 0; itera < Name.Length; itera++)
-            {
-                int current_symbol = Convert.ToInt32(Name[itera]);
-                output_array[itera] = Convert.ToChar(current_symbol ^ gamma);
-                gamma = (multiplier * gamma + term) % 256;
-            }
-            return new String(output_array);
         }
     }
 }
